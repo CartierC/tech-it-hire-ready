@@ -1,0 +1,26 @@
+﻿name: Markdown Lint
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  markdown-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Basic markdown validation
+        shell: pwsh
+        run: |
+          Write-Host "Scanning markdown files..."
+          Get-ChildItem -Recurse -Filter *.md | ForEach-Object {
+            $lines = Get-Content $_.FullName
+            $lineNumber = 1
+            foreach ($line in $lines) {
+              if ($line.Length -gt 300) {
+                Write-Host "$($_.FullName):$lineNumber exceeds 300 characters"
+              }
+              $lineNumber++
+            }
+          }
