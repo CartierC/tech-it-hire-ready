@@ -1,4 +1,3 @@
-@'
 # Verification Standard (Evidence-First)
 
 Every project in this portfolio follows the same evidence standard:
