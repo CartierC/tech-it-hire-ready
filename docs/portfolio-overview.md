@@ -34,6 +34,15 @@ This repository is the **master hub** for my cloud/infra/security portfolio.
 
 See: `docs/verification-standard.md`
 
+## Link Validation Test Data
+
+Google: https://www.google.com  
+GitHub: https://github.com  
+AWS: https://aws.amazon.com  
+
+Reference: https://aws.amazon.com  
+Profile: https://github.com/CartierC
+
 ## Templates
 
 - `templates/project-spec-template.md`
