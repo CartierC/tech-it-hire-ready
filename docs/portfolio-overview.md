@@ -1,5 +1,4 @@
-@'
-# Portfolio Overview
+## Portfolio Overview
 
 This repository is the **master hub** for my cloud/infra/security portfolio.
 
