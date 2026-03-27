@@ -1,0 +1,25 @@
+name: Portfolio Validator
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-portfolio:
+    runs-on: macos-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run portfolio validator
+        shell: bash
+        run: |
+          chmod +x scripts/portfolio-validator.sh
+          ./scripts/portfolio-validator.sh --report-file reports/portfolio-validator-report.txt
+
+      - name: Upload validator report
+        uses: actions/upload-artifact@v4
+        with:
+          name: portfolio-validator-report
+          path: reports/portfolio-validator-report.txt
+          if-no-files-found: error

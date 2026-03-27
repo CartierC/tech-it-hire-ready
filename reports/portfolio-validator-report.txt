@@ -1,0 +1,35 @@
+Portfolio Validation Report
+Generated: 2026-03-26 19:47:10 EDT
+Repository: /Users/carter/tech-it-hire-ready
+Platform: Darwin
+
+== Developer Tooling ==
+[PASS] git available at /opt/homebrew/bin/git
+[PASS] python3 available at /opt/homebrew/bin/python3
+[PASS] brew available at /opt/homebrew/bin/brew
+[PASS] curl available at /usr/bin/curl
+
+== Network and DNS ==
+[FAIL] DNS could not resolve github.com
+[FAIL] DNS could not resolve aws.amazon.com
+[FAIL] HTTPS unreachable: https://github.com
+[FAIL] HTTPS unreachable: https://aws.amazon.com
+
+== Repository Structure ==
+[PASS] Directory present: docs
+[PASS] Directory present: scripts
+[PASS] Directory present: templates
+[PASS] Directory present: .github
+[PASS] Directory present: .github/workflows
+[PASS] File present and non-empty: README.md
+[PASS] File present and non-empty: PROJECTS.md
+[PASS] File present and non-empty: docs/recruiter-30-second-scan.md
+[PASS] File present and non-empty: docs/verification-standard.md
+[PASS] File present and non-empty: templates/project-spec-template.md
+[PASS] File present and non-empty: scripts/verify-links.sh
+[PASS] File present and non-empty: scripts/portfolio-validator.sh
+[PASS] File present and non-empty: .github/workflows/link-check.yml
+[PASS] File present and non-empty: .github/workflows/markdown-lint.yml
+
+Summary: 18 passed, 4 failed, 0 skipped
+Overall Result: FAIL
