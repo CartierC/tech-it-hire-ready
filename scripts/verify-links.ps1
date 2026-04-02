@@ -1,99 +1,184 @@
-# verify-links.ps1
-# Scans markdown files for URLs, checks each link, and writes a CSV report.
+param(
+    [string]$RootPath = "."
+)
 
-Write-Host "Starting markdown link verification..." -ForegroundColor Cyan
+$ErrorActionPreference = "Stop"
 
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$RepoRoot = Split-Path -Parent $ScriptDir
-$OutputFile = Join-Path $RepoRoot "link-report.csv"
+Write-Host "Starting markdown link verification..."
 
-$MarkdownFiles = Get-ChildItem -Path $RepoRoot -Recurse -File | Where-Object {
-    $_.Extension -in @(".md", ".markdown")
+$repoRoot = Resolve-Path $RootPath
+$hasErrors = $false
+$warningCount = 0
+$errorCount = 0
+
+# Find all markdown files except common junk/vendor folders
+$markdownFiles = Get-ChildItem -Path $repoRoot -Recurse -File -Include *.md | Where-Object {
+    $_.FullName -notmatch '[\\/]\.git[\\/]' -and
+    $_.FullName -notmatch '[\\/]node_modules[\\/]' -and
+    $_.FullName -notmatch '[\\/]vendor[\\/]'
 }
 
-if (-not $MarkdownFiles) {
-    Write-Host "No markdown files found." -ForegroundColor Yellow
+if (-not $markdownFiles) {
+    Write-Host "No markdown files found."
     exit 0
 }
 
-$LinkPattern = 'https?://[^\s\)\]">]+'
-$Results = New-Object System.Collections.Generic.List[object]
-$FoundLinks = 0
-$FailedLinks = 0
+function Test-ExternalUrl {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Url
+    )
 
-foreach ($File in $MarkdownFiles) {
-    Write-Host "Scanning: $($File.FullName)" -ForegroundColor Yellow
+    try {
+        $response = Invoke-WebRequest -Uri $Url -Method Head -MaximumRedirection 5 -TimeoutSec 15 -ErrorAction Stop
+        return @{
+            Success = $true
+            StatusCode = [int]$response.StatusCode
+            Message = "OK"
+        }
+    }
+    catch {
+        try {
+            $response = Invoke-WebRequest -Uri $Url -Method Get -MaximumRedirection 5 -TimeoutSec 15 -ErrorAction Stop
+            return @{
+                Success = $true
+                StatusCode = [int]$response.StatusCode
+                Message = "OK (GET fallback)"
+            }
+        }
+        catch {
+            $statusCode = $null
+            $message = $_.Exception.Message
 
-    $Content = Get-Content -Path $File.FullName -Raw
-    $Matches = [regex]::Matches($Content, $LinkPattern)
+            if ($_.Exception.Response -and $_.Exception.Response.StatusCode) {
+                $statusCode = [int]$_.Exception.Response.StatusCode
+                $message = "HTTP $statusCode"
+            }
 
-    if ($Matches.Count -eq 0) {
+            return @{
+                Success = $false
+                StatusCode = $statusCode
+                Message = $message
+            }
+        }
+    }
+}
+
+function Test-RelativePath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$BaseDirectory,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Target
+    )
+
+    # Strip anchor if present
+    $cleanTarget = $Target.Split('#')[0]
+
+    if ([string]::IsNullOrWhiteSpace($cleanTarget)) {
+        return $true
+    }
+
+    try {
+        $joined = Join-Path -Path $BaseDirectory -ChildPath $cleanTarget
+        return (Test-Path -LiteralPath $joined)
+    }
+    catch {
+        return $false
+    }
+}
+
+# Markdown inline link pattern: [text](link)
+$linkPattern = '\[[^\]]+\]\(([^)]+)\)'
+
+foreach ($file in $markdownFiles) {
+    Write-Host "Scanning: $($file.FullName)"
+
+    $content = Get-Content -LiteralPath $file.FullName -Raw -ErrorAction SilentlyContinue
+
+    if ([string]::IsNullOrWhiteSpace($content)) {
+        Write-Host "Skipping empty or unreadable file: $($file.FullName)"
         continue
     }
 
-    $UniqueUrls = $Matches.Value | Sort-Object -Unique
+    $matches = [regex]::Matches($content, $linkPattern)
 
-    foreach ($Url in $UniqueUrls) {
-        if ([string]::IsNullOrWhiteSpace($Url)) {
+    if (-not $matches -or $matches.Count -eq 0) {
+        continue
+    }
+
+    foreach ($match in $matches) {
+        $link = $match.Groups[1].Value.Trim()
+
+        if ([string]::IsNullOrWhiteSpace($link)) {
             continue
         }
 
-        $FoundLinks++
-
-        try {
-            try {
-                $Response = Invoke-WebRequest -Uri $Url -Method Head -TimeoutSec 10 -MaximumRedirection 5 -ErrorAction Stop
-            }
-            catch {
-                $Response = Invoke-WebRequest -Uri $Url -Method Get -TimeoutSec 10 -MaximumRedirection 5 -ErrorAction Stop
-            }
-
-            $StatusCode = [int]$Response.StatusCode
-
-            $Results.Add([PSCustomObject]@{
-                File   = $File.FullName.Replace($RepoRoot + [System.IO.Path]::DirectorySeparatorChar, "")
-                URL    = $Url
-                Status = "OK"
-                Code   = $StatusCode
-            })
-
-            Write-Host "OK   $Url ($StatusCode)" -ForegroundColor Green
+        # Strip optional title text: [text](url "title")
+        if ($link -match '^\s*(\S+)\s+".*"$') {
+            $link = $matches[0].Groups[1].Value
         }
-        catch {
-            $FailedLinks++
 
-            $StatusCode = "N/A"
-            if ($_.Exception.Response -and $_.Exception.Response.StatusCode) {
-                try {
-                    $StatusCode = [int]$_.Exception.Response.StatusCode
-                }
-                catch {
-                    $StatusCode = "N/A"
-                }
+        # Remove surrounding angle brackets if present
+        $link = $link.Trim('<', '>')
+
+        # Ignore non-http navigational/safe schemes
+        if (
+            $link.StartsWith("#") -or
+            $link.StartsWith("mailto:", [System.StringComparison]::OrdinalIgnoreCase) -or
+            $link.StartsWith("tel:", [System.StringComparison]::OrdinalIgnoreCase)
+        ) {
+            continue
+        }
+
+        # Ignore localhost/dev links as warnings, not failures
+        if (
+            $link -match '^https?://localhost' -or
+            $link -match '^https?://127\.0\.0\.1'
+        ) {
+            Write-Warning "Local development link skipped in $($file.Name): $link"
+            $warningCount++
+            continue
+        }
+
+        if ($link -match '^https?://') {
+            $result = Test-ExternalUrl -Url $link
+
+            if ($result.Success) {
+                Write-Host "PASS external: $link"
+            }
+            else {
+                Write-Error "Broken external link in $($file.FullName): $link -- $($result.Message)"
+                $hasErrors = $true
+                $errorCount++
             }
 
-            $Results.Add([PSCustomObject]@{
-                File   = $File.FullName.Replace($RepoRoot + [System.IO.Path]::DirectorySeparatorChar, "")
-                URL    = $Url
-                Status = "FAIL"
-                Code   = $StatusCode
-            })
+            continue
+        }
 
-            Write-Host "FAIL $Url ($StatusCode)" -ForegroundColor Red
+        # Treat everything else as relative path
+        $baseDirectory = Split-Path -Parent $file.FullName
+        $exists = Test-RelativePath -BaseDirectory $baseDirectory -Target $link
+
+        if ($exists) {
+            Write-Host "PASS relative: $link"
+        }
+        else {
+            Write-Error "Broken relative link in $($file.FullName): $link"
+            $hasErrors = $true
+            $errorCount++
         }
     }
 }
 
-$Results | Export-Csv -Path $OutputFile -NoTypeInformation
-
 Write-Host ""
-Write-Host "Verification complete." -ForegroundColor Cyan
-Write-Host "Total links checked: $FoundLinks" -ForegroundColor White
-Write-Host "Failed links: $FailedLinks" -ForegroundColor White
-Write-Host "Report saved to: $OutputFile" -ForegroundColor Cyan
+Write-Host "Link verification complete."
+Write-Host "Warnings: $warningCount"
+Write-Host "Errors: $errorCount"
 
-if ($FailedLinks -gt 0) {
+if ($hasErrors) {
     exit 1
-} else {
-    exit 0
 }
+
+exit 0
