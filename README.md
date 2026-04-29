@@ -1,106 +1,96 @@
-# Cloud Systems Architect | Infrastructure & Security
+# Carter | Cloud, Automation & Infrastructure Portfolio
 
-A recruiter-first portfolio hub for cloud, infrastructure, security, and automation work.
+**Portfolio hub for cloud infrastructure, Python automation, networking, Linux hardening, CI/CD, and AI systems.**
 
-## The Mission
+---
 
-Build resilient, secure, and automated systems that are documented like production work: clear runbooks, validation evidence, and cleanup paths.
+## Hiring Story
 
-## 30-Second Scan
+I'm building toward roles in **AWS cloud support, IT operations, infrastructure automation, and technical operations**. Every repo in this portfolio is proof-of-execution: deployments I ran, scripts I wrote, pipelines I built, and systems I hardened — documented to production standards with runbooks, verification logs, and cleanup paths.
 
-- Core strengths: AWS, Linux, security baselines, automation, documentation
-- Evaluation path: open a project, review the runbook, inspect validation evidence
-- Proof standard: repeatable steps, clear outputs, explicit cleanup
+Target roles:
+- AWS Cloud Support Engineer
+- IT Systems/Automation Engineer
+- DevOps / Platform Operations Engineer
+- Infrastructure Engineer (Linux/Cloud)
+- Technical Operations Analyst
 
-Start here:
+---
 
-- `docs/recruiter-30-second-scan.md`
-- `docs/verification-standard.md`
-- `PROJECTS.md`
+## 30-Second Recruiter Review
 
-## Project Registry
+| Signal | Evidence |
+|---|---|
+| AWS infrastructure | `aws-ec2-secure-deployment` — EC2 + VPC + IAM baseline with validation |
+| Python automation | `it-automation-python` — operational scripts, repeatable tools |
+| Networking | `networking-labs-cli` — subnetting, DNS, CLI-driven networking labs |
+| Linux hardening | `linux-hardening-pack` — SSH, firewall, host baselines |
+| CI/CD pipelines | `devops-cicd-starter` — GitHub Actions, linting, policy checks |
+| AI systems | `aios` — AI agent/orchestration layer |
 
-This hub is the index for recruiter-facing technical proof. The current implemented artifact is the local portfolio validator, with additional cloud and DevOps projects planned.
+**Where to start:** Open any repo, read the runbook, inspect sample output. Everything is documented to be verifiable in under 5 minutes.
 
-## Recruiter-Facing Technical Proof: Portfolio Validator
+Full recruiter guide: [RECRUITER_30_SECOND_REVIEW.md](RECRUITER_30_SECOND_REVIEW.md)
 
-The repository now includes a real command-line validation tool at `scripts/portfolio-validator.sh`.
+---
 
-### What it does
+## 5-Minute Technical Review
 
-- Checks whether core developer tools are installed: `git`, `python3`, `brew`, and `curl`
-- Validates basic DNS resolution and HTTPS reachability to common engineering endpoints
-- Confirms that expected portfolio folders and files exist and are not empty
-- Prints a clean pass/fail report with a final summary
-- Returns a non-zero exit code when checks fail
+1. Pick a repo from [PORTFOLIO_INDEX.md](PORTFOLIO_INDEX.md)
+2. Read `/runbook/deploy.md` — exact commands used
+3. Check `/verification/verification-log.md` — timestamped output evidence
+4. Review `/scripts/` — what's automated vs. manual
+5. Read `/security/controls.md` for security-relevant repos
 
-### Why it matters
+Full technical guide: [TECHNICAL_REVIEW_GUIDE.md](TECHNICAL_REVIEW_GUIDE.md)
 
-This is simple on purpose. For an early cloud/DevOps portfolio, the highest-value proof is showing that you can:
+---
 
-- build a reliable CLI tool
-- validate local engineering prerequisites
-- check environment assumptions before deeper automation
-- present results clearly and professionally
+## Featured Proof Stack
 
-That maps directly to real operational work: preflight checks, environment validation, and reproducible troubleshooting.
+| # | Repo | What It Proves |
+|---|---|---|
+| 1 | [aws-ec2-secure-deployment](https://github.com/CartierC/aws-ec2-secure-deployment) | AWS infrastructure, IAM least privilege, VPC networking, security groups |
+| 2 | [it-automation-python](https://github.com/CartierC/it-automation-python) | Python scripting, operational tooling, automation patterns |
+| 3 | [networking-labs-cli](https://github.com/CartierC/networking-labs-cli) | Subnetting, DNS, network diagnostics, CLI-driven labs |
+| 4 | [linux-hardening-pack](https://github.com/CartierC/linux-hardening-pack) | Linux security baselines, SSH hardening, firewall configuration |
+| 5 | [devops-cicd-starter](https://github.com/CartierC/devops-cicd-starter) | GitHub Actions pipelines, automated validation, CI policy |
+| 6 | [aios](https://github.com/CartierC/aios) | AI agent systems, orchestration, tool-use patterns |
 
-### How to run it
+---
 
-From the repository root:
+## Certifications
+
+- **AWS Cloud Practitioner** — in progress
+
+---
+
+## Hub Infrastructure
+
+This repo is the portfolio index. It includes:
+
+- CI validation via GitHub Actions (link check, markdown lint, portfolio validator)
+- Reusable templates in `templates/`
+- A local runnable validator at `scripts/portfolio-validator.sh`
+- Documentation standards in `docs/verification-standard.md`
+
+### Run the local validator
 
 ```bash
 chmod +x scripts/portfolio-validator.sh
 ./scripts/portfolio-validator.sh
 ```
 
-Optional:
+---
 
-```bash
-./scripts/portfolio-validator.sh --help
-```
+## Repository Index
 
-### Example use cases
+Full breakdown by role alignment and skills: [PORTFOLIO_INDEX.md](PORTFOLIO_INDEX.md)
 
-- Verify a new macOS setup before starting portfolio work
-- Confirm the repo contains the expected structure before sharing it
-- Use the exit code in CI or local setup scripts
+---
 
-## How This Repo Stays Production-Grade
+## Recruiter Note
 
-- Link-check automation in `.github/workflows/link-check.yml`
-- Markdown validation in `.github/workflows/markdown-lint.yml`
-- Portfolio validation in `.github/workflows/portfolio-validator.yml`
-- Reusable templates in `templates/`
-- A runnable local validator in `scripts/portfolio-validator.sh`
+This portfolio is built to be evaluated quickly and verified independently. Every repo follows the same evidence standard: runbook, verification log, cleanup path, no secrets committed. The goal is to remove the need to take anything on faith — you can run the code, read the output, and judge the work directly.
 
-## CI Validation
-
-GitHub Actions runs the portfolio validator automatically on every `push` and `pull_request`.
-
-What it checks:
-
-- core local tooling expected for this portfolio
-- basic DNS and HTTPS reachability
-- required repo folders and files
-
-Why it matters:
-
-- proves the validator is not just local-only
-- shows a clean CI habit that hiring teams expect
-- demonstrates simple preflight automation you can explain in an interview
-
-## CI Artifact Report
-
-The validator workflow also publishes a small artifact report after each run.
-
-Why that matters:
-
-- recruiters and reviewers can inspect the results without digging through raw logs
-- the repo shows both automated checks and retained evidence
-- it mirrors the evidence-first approach described elsewhere in this portfolio
-
-## Contact
-
-- GitHub: `CartierC`
-- Focus: cloud infrastructure, security-first engineering, automation
+GitHub: [github.com/CartierC](https://github.com/CartierC)
